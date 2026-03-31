@@ -4,6 +4,8 @@ part of 'gpt_markdown.dart';
 class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
   GptMarkdownThemeData._({
     required this.highlightColor,
+    required this.inlineCodeStyle,
+    required this.inlineCodeBackgroundColor,
     required this.h1,
     required this.h2,
     required this.h3,
@@ -20,6 +22,8 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
   factory GptMarkdownThemeData({
     required Brightness brightness,
     Color? highlightColor,
+    TextStyle? inlineCodeStyle,
+    Color? inlineCodeBackgroundColor,
     TextStyle? h1,
     TextStyle? h2,
     TextStyle? h3,
@@ -58,6 +62,8 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
     TextTheme textTheme = themeData.textTheme;
     return GptMarkdownThemeData._fromTheme(themeData, textTheme).copyWith(
       highlightColor: highlightColor,
+      inlineCodeStyle: inlineCodeStyle,
+      inlineCodeBackgroundColor: inlineCodeBackgroundColor,
       h1: h1,
       h2: h2,
       h3: h3,
@@ -77,6 +83,10 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
   ) {
     return GptMarkdownThemeData._(
       highlightColor: theme.colorScheme.onSurfaceVariant.withAlpha(50),
+      inlineCodeStyle: const TextStyle(fontWeight: FontWeight.bold),
+      inlineCodeBackgroundColor: theme.colorScheme.onSurfaceVariant.withAlpha(
+        50,
+      ),
       h1: textTheme.headlineLarge,
       h2: textTheme.headlineMedium,
       h3: textTheme.headlineSmall,
@@ -92,6 +102,12 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
 
   /// The highlight color.
   Color highlightColor;
+
+  /// The style of inline code enclosed in backticks.
+  TextStyle? inlineCodeStyle;
+
+  /// The background color of inline code enclosed in backticks.
+  Color? inlineCodeBackgroundColor;
 
   /// The style of the h1 text.
   TextStyle? h1;
@@ -125,6 +141,8 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
   @override
   GptMarkdownThemeData copyWith({
     Color? highlightColor,
+    TextStyle? inlineCodeStyle,
+    Color? inlineCodeBackgroundColor,
     TextStyle? h1,
     TextStyle? h2,
     TextStyle? h3,
@@ -138,6 +156,9 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
   }) {
     return GptMarkdownThemeData._(
       highlightColor: highlightColor ?? this.highlightColor,
+      inlineCodeStyle: inlineCodeStyle ?? this.inlineCodeStyle,
+      inlineCodeBackgroundColor:
+          inlineCodeBackgroundColor ?? this.inlineCodeBackgroundColor,
       h1: h1 ?? this.h1,
       h2: h2 ?? this.h2,
       h3: h3 ?? this.h3,
@@ -159,6 +180,16 @@ class GptMarkdownThemeData extends ThemeExtension<GptMarkdownThemeData> {
     return GptMarkdownThemeData._(
       highlightColor:
           Color.lerp(highlightColor, other.highlightColor, t) ?? highlightColor,
+      inlineCodeStyle:
+          TextStyle.lerp(inlineCodeStyle, other.inlineCodeStyle, t) ??
+          inlineCodeStyle,
+      inlineCodeBackgroundColor:
+          Color.lerp(
+            inlineCodeBackgroundColor,
+            other.inlineCodeBackgroundColor,
+            t,
+          ) ??
+          inlineCodeBackgroundColor,
       h1: TextStyle.lerp(h1, other.h1, t) ?? h1,
       h2: TextStyle.lerp(h2, other.h2, t) ?? h2,
       h3: TextStyle.lerp(h3, other.h3, t) ?? h3,
@@ -189,8 +220,8 @@ class GptMarkdownTheme extends InheritedWidget {
   /// A method to get the `GptMarkdownThemeData` from the `BuildContext`.
   static GptMarkdownThemeData of(BuildContext context) {
     var theme = Theme.of(context);
-    final provider =
-        context.dependOnInheritedWidgetOfExactType<GptMarkdownTheme>();
+    final provider = context
+        .dependOnInheritedWidgetOfExactType<GptMarkdownTheme>();
     if (provider != null) {
       return provider.gptThemeData;
     }

@@ -38,10 +38,9 @@ abstract class MarkdownComponent {
     final GptMarkdownConfig config,
     bool includeGlobalComponents,
   ) {
-    var components =
-        includeGlobalComponents
-            ? config.components ?? MarkdownComponent.globalComponents
-            : config.inlineComponents ?? MarkdownComponent.inlineComponents;
+    var components = includeGlobalComponents
+        ? config.components ?? MarkdownComponent.globalComponents
+        : config.inlineComponents ?? MarkdownComponent.inlineComponents;
     List<InlineSpan> spans = [];
     Iterable<String> regexes = components.map<String>((e) => e.exp.pattern);
     final combinedRegex = RegExp(
@@ -202,15 +201,14 @@ class HTag extends BlockMd {
     var theme = GptMarkdownTheme.of(context);
     var match = this.exp.firstMatch(text.trim());
     var conf = config.copyWith(
-      style:
-          [
-            theme.h1,
-            theme.h2,
-            theme.h3,
-            theme.h4,
-            theme.h5,
-            theme.h6,
-          ][match![1]!.length - 1],
+      style: [
+        theme.h1,
+        theme.h2,
+        theme.h3,
+        theme.h4,
+        theme.h5,
+        theme.h6,
+      ][match![1]!.length - 1],
     );
     return config.getRich(
       TextSpan(
@@ -326,12 +324,12 @@ class BlockQuote extends InlineMd {
   bool get inline => false;
   @override
   RegExp get exp =>
-  // RegExp(r"(?<=\n\n)(\ +)(.+?)(?=\n\n)", dotAll: true, multiLine: true);
-  RegExp(
-    r"(?:(?:^)\ *>[^\n]+)(?:(?:\n)\ *>[^\n]+)*",
-    dotAll: true,
-    multiLine: true,
-  );
+      // RegExp(r"(?<=\n\n)(\ +)(.+?)(?=\n\n)", dotAll: true, multiLine: true);
+      RegExp(
+        r"(?:(?:^)\ *>[^\n]+)(?:(?:\n)\ *>[^\n]+)*",
+        dotAll: true,
+        multiLine: true,
+      );
 
   @override
   InlineSpan span(
@@ -462,6 +460,7 @@ class HighlightedText extends InlineMd {
   ) {
     var match = exp.firstMatch(text.trim());
     var highlightedText = match?[1] ?? "";
+    final theme = GptMarkdownTheme.of(context);
 
     if (config.highlightBuilder != null) {
       return WidgetSpan(
@@ -474,23 +473,17 @@ class HighlightedText extends InlineMd {
       );
     }
 
-    var style =
-        config.style?.copyWith(
-          fontWeight: FontWeight.bold,
-          background:
-              Paint()
-                ..color = GptMarkdownTheme.of(context).highlightColor
-                ..strokeCap = StrokeCap.round
-                ..strokeJoin = StrokeJoin.round,
-        ) ??
-        TextStyle(
-          fontWeight: FontWeight.bold,
-          background:
-              Paint()
-                ..color = GptMarkdownTheme.of(context).highlightColor
-                ..strokeCap = StrokeCap.round
-                ..strokeJoin = StrokeJoin.round,
-        );
+    final mergedStyle = (config.style ?? const TextStyle()).merge(
+      theme.inlineCodeStyle,
+    );
+    final backgroundColor =
+        theme.inlineCodeBackgroundColor ?? theme.highlightColor;
+    final style = mergedStyle.copyWith(
+      background: Paint()
+        ..color = backgroundColor
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
 
     return TextSpan(text: highlightedText, style: style);
   }
@@ -635,10 +628,9 @@ class LatexMathMultiLine extends BlockMd {
                     workaround(mathText),
                     textDirection: config.textDirection,
                     style: textStyle.copyWith(
-                      color:
-                          (!kDebugMode)
-                              ? null
-                              : Theme.of(context).colorScheme.error,
+                      color: (!kDebugMode)
+                          ? null
+                          : Theme.of(context).colorScheme.error,
                     ),
                   );
                 },
@@ -710,10 +702,9 @@ class LatexMath extends InlineMd {
                     workaround(mathText),
                     textDirection: config.textDirection,
                     style: textStyle.copyWith(
-                      color:
-                          (!kDebugMode)
-                              ? null
-                              : Theme.of(context).colorScheme.error,
+                      color: (!kDebugMode)
+                          ? null
+                          : Theme.of(context).colorScheme.error,
                     ),
                   );
                 },
@@ -966,22 +957,22 @@ class ImageMd extends InlineMd {
         height: height,
         child: Image(
           image: NetworkImage(url),
-          loadingBuilder: (
-            BuildContext context,
-            Widget child,
-            ImageChunkEvent? loadingProgress,
-          ) {
-            if (loadingProgress == null) {
-              return child;
-            }
-            return CustomImageLoading(
-              progress:
-                  loadingProgress.expectedTotalBytes != null
+          loadingBuilder:
+              (
+                BuildContext context,
+                Widget child,
+                ImageChunkEvent? loadingProgress,
+              ) {
+                if (loadingProgress == null) {
+                  return child;
+                }
+                return CustomImageLoading(
+                  progress: loadingProgress.expectedTotalBytes != null
                       ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
+                            loadingProgress.expectedTotalBytes!
                       : 1,
-            );
-          },
+                );
+              },
           fit: BoxFit.fill,
           errorBuilder: (context, error, stackTrace) {
             return const CustomImageError();
@@ -1004,19 +995,17 @@ class TableMd extends BlockMd {
     String text,
     final GptMarkdownConfig config,
   ) {
-    final List<Map<int, String>> value =
-        text
-            .split('\n')
-            .map<Map<int, String>>(
-              (e) =>
-                  e
-                      .trim()
-                      .split('|')
-                      .where((element) => element.isNotEmpty)
-                      .toList()
-                      .asMap(),
-            )
-            .toList();
+    final List<Map<int, String>> value = text
+        .split('\n')
+        .map<Map<int, String>>(
+          (e) => e
+              .trim()
+              .split('|')
+              .where((element) => element.isNotEmpty)
+              .toList()
+              .asMap(),
+        )
+        .toList();
 
     // Check if table has a header and separator row
     bool hasHeader = value.length >= 2;
@@ -1064,25 +1053,24 @@ class TableMd extends BlockMd {
     var tableBuilder = config.tableBuilder;
 
     if (tableBuilder != null) {
-      var customTable =
-          List<CustomTableRow?>.generate(value.length, (index) {
-            var isHeader = index == 0;
-            var row = value[index];
-            if (row.isEmpty) {
-              return null;
-            }
-            if (index == 1) {
-              return null;
-            }
-            var fields = List<CustomTableField>.generate(maxCol, (index) {
-              var field = row[index];
-              return CustomTableField(
-                data: field ?? "",
-                alignment: columnAlignments[index],
-              );
-            });
-            return CustomTableRow(isHeader: isHeader, fields: fields);
-          }).nonNulls.toList();
+      var customTable = List<CustomTableRow?>.generate(value.length, (index) {
+        var isHeader = index == 0;
+        var row = value[index];
+        if (row.isEmpty) {
+          return null;
+        }
+        if (index == 1) {
+          return null;
+        }
+        var fields = List<CustomTableField>.generate(maxCol, (index) {
+          var field = row[index];
+          return CustomTableField(
+            data: field ?? "",
+            alignment: columnAlignments[index],
+          );
+        });
+        return CustomTableRow(isHeader: isHeader, fields: fields);
+      }).nonNulls.toList();
       return tableBuilder(
         context,
         customTable,
@@ -1105,75 +1093,72 @@ class TableMd extends BlockMd {
             width: 1,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          children:
-              value
-                  .asMap()
-                  .entries
-                  .where((entry) {
-                    // Skip the separator row (second row) from rendering
-                    if (hasHeader && entry.key == 1) {
-                      return false;
-                    }
-                    return true;
-                  })
-                  .map<TableRow>(
-                    (entry) => TableRow(
-                      decoration:
-                          (hasHeader && entry.key == 0)
-                              ? BoxDecoration(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
-                              )
-                              : null,
-                      children: List.generate(maxCol, (index) {
-                        var e = entry.value;
-                        String data = e[index] ?? "";
-                        if (RegExp(r"^:?--+:?$").hasMatch(data.trim()) ||
-                            data.trim().isEmpty) {
-                          return const SizedBox();
-                        }
-
-                        // Apply alignment based on column alignment
-                        Widget content = Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: MdWidget(
+          children: value
+              .asMap()
+              .entries
+              .where((entry) {
+                // Skip the separator row (second row) from rendering
+                if (hasHeader && entry.key == 1) {
+                  return false;
+                }
+                return true;
+              })
+              .map<TableRow>(
+                (entry) => TableRow(
+                  decoration: (hasHeader && entry.key == 0)
+                      ? BoxDecoration(
+                          color: Theme.of(
                             context,
-                            (e[index] ?? "").trim(),
-                            false,
-                            config: config,
-                          ),
+                          ).colorScheme.surfaceContainerHighest,
+                        )
+                      : null,
+                  children: List.generate(maxCol, (index) {
+                    var e = entry.value;
+                    String data = e[index] ?? "";
+                    if (RegExp(r"^:?--+:?$").hasMatch(data.trim()) ||
+                        data.trim().isEmpty) {
+                      return const SizedBox();
+                    }
+
+                    // Apply alignment based on column alignment
+                    Widget content = Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: MdWidget(
+                        context,
+                        (e[index] ?? "").trim(),
+                        false,
+                        config: config,
+                      ),
+                    );
+
+                    // Wrap with alignment widget
+                    switch (columnAlignments[index]) {
+                      case TextAlign.center:
+                        content = Center(child: content);
+                        break;
+                      case TextAlign.right:
+                        content = Align(
+                          alignment: Alignment.centerRight,
+                          child: content,
                         );
+                        break;
+                      case TextAlign.left:
+                      default:
+                        content = Align(
+                          alignment: Alignment.centerLeft,
+                          child: content,
+                        );
+                        break;
+                    }
 
-                        // Wrap with alignment widget
-                        switch (columnAlignments[index]) {
-                          case TextAlign.center:
-                            content = Center(child: content);
-                            break;
-                          case TextAlign.right:
-                            content = Align(
-                              alignment: Alignment.centerRight,
-                              child: content,
-                            );
-                            break;
-                          case TextAlign.left:
-                          default:
-                            content = Align(
-                              alignment: Alignment.centerLeft,
-                              child: content,
-                            );
-                            break;
-                        }
-
-                        return content;
-                      }),
-                    ),
-                  )
-                  .toList(),
+                    return content;
+                  }),
+                ),
+              )
+              .toList(),
         ),
       ),
     );
